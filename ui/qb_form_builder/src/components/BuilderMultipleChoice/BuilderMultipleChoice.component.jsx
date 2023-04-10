@@ -27,6 +27,8 @@ const BuilderMultipleChoice = () => {
   const [sendJson, setSendJson] = useState(false);
   const [disableSubmit, setDisableSubmit] = useState(false);
 
+  // A useEffect hook to send data when all validations are fulfilled after
+  // user clicks on submit button
   useEffect(() => {
     if (sendJson && hasMounted) {
       const sortedChoices =
@@ -46,6 +48,7 @@ const BuilderMultipleChoice = () => {
           const result = await FieldService.saveField(fieldJson);
           console.log('status: ' + result.status);
 
+          //Code to persist form data
           handleClearForm();
           const savedState = JSON.parse(
             localStorage.getItem('builderMultipleChoice')
@@ -77,6 +80,8 @@ const BuilderMultipleChoice = () => {
     hasMounted,
   ]);
 
+  //A useEffect hook that saves data to local storage every time
+  //the user edits a field.
   useEffect(() => {
     if (hasMounted) {
       localStorage.setItem(
@@ -101,6 +106,7 @@ const BuilderMultipleChoice = () => {
     hasMounted,
   ]);
 
+  //A useEffect hook that controls the "disable" field of the save-changes button.
   useEffect(() => {
     if (
       requiredLabelError !== '' ||
@@ -121,6 +127,8 @@ const BuilderMultipleChoice = () => {
     defaultLengthError,
   ]);
 
+  //a useeffect hook that gets stored data from local storage to
+  //enable the user to continue from where they left.
   useEffect(() => {
     const savedState = JSON.parse(
       localStorage.getItem('builderMultipleChoice')
@@ -135,12 +143,14 @@ const BuilderMultipleChoice = () => {
     }
   }, []);
 
+  //a useEffect hook that sets the label error field
   useEffect(() => {
     if (label.length > 0) {
       setRequiredLabelError('');
     }
   }, [label]);
 
+  //a useEffect hook that sets the default value error field
   useEffect(() => {
     if (defaultValue.length > 40) {
       SetDefaultLengthError(true);
@@ -149,6 +159,8 @@ const BuilderMultipleChoice = () => {
     }
   }, [defaultValue]);
 
+  //This function makes the choices textarea a controlled input
+  //and performs validations on it
   const handleChoicesChange = (event) => {
     const newChoices = event.target.value.split('\n');
     const filterChoices = newChoices
@@ -181,6 +193,7 @@ const BuilderMultipleChoice = () => {
     }
   };
 
+  //The implementation of the cancel button to clear all fields and start fresh.
   const handleClearForm = () => {
     setLabel('');
     setIsRequired(false);
@@ -196,6 +209,8 @@ const BuilderMultipleChoice = () => {
     setDisableSubmit(false);
   };
 
+  //This function handles the "Save" feature. It performs validations and triggers the useEffect
+  //that controls sending of data to the server.
   const handleSave = async () => {
     if (label === '') {
       setRequiredLabelError('Error: Label is a required field');
@@ -205,18 +220,21 @@ const BuilderMultipleChoice = () => {
     if (
       duplicateChoicesError !== '' ||
       invalidChoices.length > 0 ||
-      defaultLengthError
+      defaultLengthError ||
+      totalChoicesError !== ''
     ) {
       return;
     }
 
     if (defaultValue !== '' && !filteredChoices.includes(defaultValue)) {
-      setFilteredChoices([...filteredChoices, defaultValue]);
-      if (filteredChoices.length > 50) {
+      const allChoices = [...filteredChoices, defaultValue];
+      if (allChoices.length > 50) {
         SetTotalChoicesError(
           'Total number of choices must not be more than 50'
         );
         return;
+      } else {
+        setFilteredChoices(allChoices);
       }
     }
 
